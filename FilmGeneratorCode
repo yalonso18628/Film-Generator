@@ -1,0 +1,94 @@
+#Create a database that holds the films and director 
+import re
+import webbrowser
+import random
+import sqlite3
+
+count = 0
+initializer = None
+
+conn = sqlite3.connect('movie_database.sqlite')
+cur = conn.cursor()
+
+while initializer == None:
+    print('\n')
+    print('Add Film [1]')
+    print('View List [2]')
+    print('Random Film [3]')
+    print('Exit [4]')
+    choice = input()
+
+    if choice == '1':
+        print('\n')
+        cur.executescript('''
+            CREATE TABLE IF NOT EXISTS Films (
+                id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
+                film TEXT UNIQUE 
+            );
+
+            CREATE TABLE IF NOT EXISTS Directors (
+                id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
+                director TEXT
+            )
+        ''')
+
+        film = input('Enter Film: ')
+        director = input('Enter Director: ')
+
+        try:
+            cur.execute('''INSERT INTO Films (film) VALUES (?)''', (film,))
+            cur.execute('''INSERT INTO Directors (director) VALUES (?)''', (director,))
+            print('\n')
+            print('Film added!')
+        except:
+            print('Film already added.')
+    
+
+
+    if choice == '2':
+        try:
+            film_printout = '''
+                SELECT Films.film, Directors.director
+                FROM Films JOIN Directors
+                ON Films.id = Directors.id
+            
+                ORDER by Directors.director
+                '''
+        
+            print('\n')
+
+            for row in cur.execute(film_printout):
+                print('Director:', str(row[1]), '/', 'Film:', str(row[0]))
+        except:
+            print('No table found!')
+
+
+
+    if choice == '3':
+        random_film = ('''
+        SELECT Films.film, Directors.director
+        FROM Films JOIN Directors 
+        ON Films.id = Directors.id
+        
+        ORDER BY RANDOM() LIMIT 1
+        ''')
+
+        print('\n')
+
+        for row in cur.execute(random_film):
+            print('Director:', str(row[1]), '/', 'Film:', str(row[0]))
+            director = str(row[1])
+            film = str(row[0])
+
+        cur.execute('DELETE FROM Films WHERE film = ?', (film,))
+        cur.execute('DELETE FROM Directors WHERE director = ?', (director,))
+        conn.commit()
+
+        #You can add this to open it in a users preferred streaming service, if available. 
+        '''URL = 'https://www.netflix.com/search?q='
+        newUrl = URL + film
+        webbrowser.open(newUrl)'''
+    
+    if choice == '4':
+        cur.close()
+        break
