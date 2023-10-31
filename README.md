@@ -16,6 +16,6 @@ User has four options:
 4) Exit Application
   - Exits the Python application.
 
-Future goals:
+Future Goals:
 - As of now the user must input everything manually, hoping to learn a bit more about
   web-scraping and having the program read from a users specific list. 
